@@ -145,7 +145,16 @@ Provide your recommendation in JSON format:
   "summary": "brief one-sentence recommendation with emoji"
 }`;
 
-      const result = await this.model.generateContent(prompt);
+      // Wrap the API call in its own try-catch to handle quota errors immediately
+      let result;
+      try {
+        result = await this.model.generateContent(prompt);
+      } catch (apiError) {
+        console.error('Gemini API call failed:', apiError);
+        // If the API call itself fails (quota, network, etc.), immediately use fallback
+        return this.generateFallbackRecommendation(drivingData, transitData);
+      }
+
       const response = await result.response;
       const text = response.text();
 
@@ -192,7 +201,16 @@ Current conditions:
 
 Provide a single, actionable insight (2-3 sentences) that helps the driver make a smart parking decision. Include specific tips about timing, alternatives, or strategies.`;
 
-      const result = await this.model.generateContent(prompt);
+      // Wrap the API call in its own try-catch to handle quota errors immediately
+      let result;
+      try {
+        result = await this.model.generateContent(prompt);
+      } catch (apiError) {
+        console.error('Gemini API call failed:', apiError);
+        // If the API call itself fails, immediately use fallback
+        return this.generateFallbackParkingInsight(parkingScore, timeToFind);
+      }
+
       const response = await result.response;
       return response.text().trim();
 
